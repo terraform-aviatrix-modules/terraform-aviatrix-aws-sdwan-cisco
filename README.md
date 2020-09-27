@@ -48,6 +48,7 @@ image_type | vedge | "Determines whether CSR SDWAN ("csr") or vEdge ("vedge") im
 tunnel_cidr | 172.31.255.0/28 | CIDR for creation of tunnel IP's. At least /28 is required, even in non-HA. This is because the module will always carve out 4x /30.
 aviatrix_asn | 65000 | ASN To be used on Aviatrix Transit Gateway for BGP
 sdwan_asn | 65001 | ASN To be used on SDWAN Gateway for BGP
+aviatrix_tunnel_creation | true | When set to false, the IPSEC tunnels will not be provisioned to the Aviatrix transit gateway.
 
 ### Outputs
 This module will return the following outputs:

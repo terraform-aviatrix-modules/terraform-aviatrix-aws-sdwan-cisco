@@ -131,6 +131,7 @@ resource "aws_eip_association" "eip_headend_2" {
 
 #Aviatrix VPN Tunnels
 resource "aviatrix_transit_external_device_conn" "sdwan" {
+  count                     = var.aviatrix_tunnel_creation ? 1 : 0
   vpc_id                    = var.transit_gw_obj.vpc_id
   connection_name           = "SDWAN-${var.region}"
   gw_name                   = var.transit_gw_obj.gw_name
