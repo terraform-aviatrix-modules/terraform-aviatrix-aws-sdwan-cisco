@@ -36,10 +36,16 @@ variable "ha_gw" {
   default     = true
 }
 
-variable "image_version" {
+variable "vedge_image_version" {
   description = "Determines which image version will be deployed."
   type        = string
   default     = "20.3.1" #Make sure the version is available in the Marketplace
+}
+
+variable "csr_image_version" {
+  description = "Determines which image version will be deployed."
+  type        = string
+  default     = "17.3.1a" #Make sure the version is available in the Marketplace
 }
 
 variable "image_type" {
