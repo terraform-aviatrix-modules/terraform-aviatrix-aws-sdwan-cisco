@@ -43,7 +43,7 @@ variable "version" {
 }
 
 variable "image_type" {
-  description = "Determines whether CSR SDWAN ("csr") or vEdge ("vedge", default) image should be used."
+  description = "Determines whether CSR SDWAN (\"csr\") or vEdge (\"vedge\", default) image should be used."
   type        = string
   default     = "vedge" #Use "csr" to select CSR image.
 }
