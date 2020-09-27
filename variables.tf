@@ -79,7 +79,7 @@ variable "sdwan_asn" {
 }
 
 variable "aviatrix_tunnel_creation" {
-  description = "When set to false, the IPSEC tunnels will not be provisioned to the Aviatrix transit gateway."
+  description = "When set to true, the IPSEC tunnels will be provisioned to the Aviatrix transit gateway."
   type        = bool
-  default     = true
+  default     = false
 }
