@@ -2,7 +2,7 @@ data "aws_ami" "vedge" {
   most_recent = true
   filter {
     name   = "name"
-    values = ["*${var.image_version}*vEdge-Marketplace*"]
+    values = ["*${var.vedge_image_version}*vEdge-Marketplace*"]
   }
   owners = ["679593333241"] # Marketplace
 }
