@@ -74,7 +74,7 @@ locals {
 
 #SDWAN Headend 1
 resource "aws_instance" "headend_1" {
-  ami                         = var.image_type = "vedge" ? data.aws_ami.vedge.id : data.aws_ami.csr.id
+  ami                         = length(regexall("vedge", lower(var.image_type))) > 0 ? data.aws_ami.vedge.id : data.aws_ami.csr.id
   instance_type               = var.instance_size
   subnet_id                   = aws_subnet.sdwan_1.id
   associate_public_ip_address = true
@@ -93,7 +93,7 @@ resource "aws_instance" "headend_1" {
 #SDWAN Headend 2 (HA)
 resource "aws_instance" "headend_2" {
   count                       = var.ha_gw ? 1 : 0
-  ami                         = var.image_type = "vedge" ? data.aws_ami.vedge.id : data.aws_ami.csr.id
+  ami                         = length(regexall("vedge", lower(var.image_type))) > 0 ? data.aws_ami.vedge.id : data.aws_ami.csr.id
   instance_type               = var.instance_size
   subnet_id                   = aws_subnet.sdwan_2.id
   associate_public_ip_address = true
