@@ -42,7 +42,7 @@ az1 | "a" | Availability zone 1, for headend deployment.
 az2 | "b" | Availability zone 2, for headend deployment.
 ha_gw | true | Set to false te deploy a single sdwan headend. Make sure this matches the transit GW. They have to be both HA or both Single. Mix is not supported.
 instance_size | t2.small | Instance size of the SDWAN GW's
-version | 20.3.1 | Provide version number to deploy headends with. Set to empty to use latest.
+image_version | 20.3.1 | Provide version number to deploy headends with. Set to empty to use latest.
 image_type | vedge | "Determines whether CSR SDWAN ("csr") or vEdge ("vedge") image should be used."
 tunnel_cidr | 172.31.255.0/28 | CIDR for creation of tunnel IP's. At least /28 is required, even in non-HA. This is because the module will always carve out 4x /30.
 aviatrix_asn | 65000 | ASN To be used on Aviatrix Transit Gateway for BGP
