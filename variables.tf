@@ -57,7 +57,7 @@ variable "image_type" {
 variable "instance_size" {
   description = "AWS Instance size for the SDWAN gateways"
   type        = string
-  default     = "t2.small"
+  default     = "t2.medium"
 }
 
 variable "tunnel_cidr" {
