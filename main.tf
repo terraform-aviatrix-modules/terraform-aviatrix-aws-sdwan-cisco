@@ -133,7 +133,7 @@ resource "aws_network_interface" "headend_2_eth1" {
   source_dest_check = false
 
   attachment {
-    instance     = aws_instance.headend_2.id
+    instance     = aws_instance.headend_2[0].id
     device_index = 1
   }
 }
@@ -170,7 +170,7 @@ resource "aws_eip_association" "eip_headend_1_eth1" {
 
 resource "aws_eip_association" "eip_headend_2_eth0" {
   count                = var.ha_gw ? 1 : 0
-  network_interface_id = aws_instance.headend_2.primary_network_interface_id
+  network_interface_id = aws_instance.headend_2[0].primary_network_interface_id
   allocation_id        = aws_eip.headend_2_eth0[0].id
 }
 
