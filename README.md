@@ -1,7 +1,7 @@
 # terraform-aviatrix-aws-sdwan-cisco
 
 ### Description
-Deploys edge VPC with SDWAN headends and creates tunnels on the Aviatrix transit gateway. Tunnels on the Viptela headends need to be created manually.
+Deploys edge VPC with SDWAN headends and creates tunnels on the Aviatrix transit gateway. Tunnels on the Cisco headends need to be created manually.
 
 ### Diagram
 \<Provide a diagram of the high level constructs thet will be created by this module>
