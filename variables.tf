@@ -128,9 +128,9 @@ variable "second_interface" {
 
 }
 locals {
-  sdwan_gw_subnet_id   = var.use_existing_vpc ? var.sdwan_gw_subnet_id : aws_subnet.sdwan_1.id
-  sdwan_ha_subnet_id   = var.use_existing_vpc ? var.sdwan_ha_subnet_id : aws_subnet.sdwan_2.id
-  sdwan_gw_subnet_cidr = var.use_existing_vpc ? var.sdwan_gw_subnet_cidr : aws_subnet.sdwan_1.cidr_block
-  sdwan_ha_subnet_cidr = var.use_existing_vpc ? var.sdwan_ha_subnet_cidr : aws_subnet.sdwan_2.cidr_block
+  sdwan_gw_subnet_id   = var.use_existing_vpc ? var.sdwan_gw_subnet_id : aws_subnet.sdwan_1[0].id
+  sdwan_ha_subnet_id   = var.use_existing_vpc ? var.sdwan_ha_subnet_id : aws_subnet.sdwan_2[0].id
+  sdwan_gw_subnet_cidr = var.use_existing_vpc ? var.sdwan_gw_subnet_cidr : aws_subnet.sdwan_1[0].cidr_block
+  sdwan_ha_subnet_cidr = var.use_existing_vpc ? var.sdwan_ha_subnet_cidr : aws_subnet.sdwan_2[0].cidr_block
   ami                  = length(regexall("vedge", lower(var.image_type))) > 0 ? data.aws_ami.vedge.id : data.aws_ami.csr.id
 }

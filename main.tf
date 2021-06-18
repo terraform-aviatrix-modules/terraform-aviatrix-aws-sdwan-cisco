@@ -33,9 +33,9 @@ resource "aws_internet_gateway" "sdwan" {
 #Default route
 resource "aws_route" "default_vpc1" {
   count                  = var.use_existing_vpc ? 0 : 1
-  route_table_id         = aws_vpc.sdwan.default_route_table_id
+  route_table_id         = aws_vpc.sdwan[0].default_route_table_id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.sdwan.id
+  gateway_id             = aws_internet_gateway.sdwan[0].id
 }
 
 #Security Group
