@@ -1,5 +1,6 @@
 #Edge VPC
 resource "aws_vpc" "sdwan" {
+  count                = var.use_existing_vpc ? 0 : 1
   cidr_block           = var.cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
@@ -10,12 +11,14 @@ resource "aws_vpc" "sdwan" {
 
 #Subnets
 resource "aws_subnet" "sdwan_1" {
+  count             = var.use_existing_vpc ? 0 : 1
   availability_zone = "${var.region}${var.az1}"
   vpc_id            = aws_vpc.sdwan.id
   cidr_block        = cidrsubnet(var.cidr, 1, 0)
 }
 
 resource "aws_subnet" "sdwan_2" {
+  count             = var.use_existing_vpc ? 0 : 1
   availability_zone = "${var.region}${var.az2}"
   vpc_id            = aws_vpc.sdwan.id
   cidr_block        = cidrsubnet(var.cidr, 1, 1)
@@ -23,11 +26,13 @@ resource "aws_subnet" "sdwan_2" {
 
 #IGW
 resource "aws_internet_gateway" "sdwan" {
+  count  = var.use_existing_vpc ? 0 : 1
   vpc_id = aws_vpc.sdwan.id
 }
 
 #Default route
 resource "aws_route" "default_vpc1" {
+  count                  = var.use_existing_vpc ? 0 : 1
   route_table_id         = aws_vpc.sdwan.default_route_table_id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.sdwan.id
@@ -35,8 +40,8 @@ resource "aws_route" "default_vpc1" {
 
 #Security Group
 resource "aws_security_group" "sdwan" {
-  name   = "all_traffic"
-  vpc_id = aws_vpc.sdwan.id
+  name   = "sdwan"
+  vpc_id = var.use_existing_vpc ? var.vpc_id : aws_vpc.sdwan.id
 
   ingress {
     from_port   = 0
@@ -74,53 +79,105 @@ locals {
 
 #SDWAN Headend 1
 resource "aws_instance" "headend_1" {
-  ami                         = length(regexall("vedge", lower(var.image_type))) > 0 ? data.aws_ami.vedge.id : data.aws_ami.csr.id
+  ami                         = local.ami
   instance_type               = var.instance_size
-  subnet_id                   = aws_subnet.sdwan_1.id
+  subnet_id                   = local.sdwan_gw_subnet_id
   associate_public_ip_address = true
   security_groups             = [aws_security_group.sdwan.id]
   lifecycle {
     ignore_changes = [security_groups]
   }
-  source_dest_check    = false
-  private_ip           = cidrhost(aws_subnet.sdwan_1.cidr_block, 10)
+  source_dest_check = false
+  private_ip        = cidrhost(local.sdwan_gw_subnet_cidr, 10)
 
   tags = {
     Name = length(var.name) > 0 ? "${var.name}-headend1" : "avx-sdwan-edge-headend1",
   }
 }
 
+resource "aws_network_interface" "headend_1_eth1" {
+  count             = var.second_interface ? 1 : 0
+  subnet_id         = local.sdwan_gw_subnet_id
+  security_groups   = [aws_security_group.sdwan.id]
+  source_dest_check = false
+
+  attachment {
+    instance     = aws_instance.headend_1.id
+    device_index = 1
+  }
+}
+
 #SDWAN Headend 2 (HA)
 resource "aws_instance" "headend_2" {
   count                       = var.ha_gw ? 1 : 0
-  ami                         = length(regexall("vedge", lower(var.image_type))) > 0 ? data.aws_ami.vedge.id : data.aws_ami.csr.id
+  ami                         = local.ami
   instance_type               = var.instance_size
-  subnet_id                   = aws_subnet.sdwan_2.id
+  subnet_id                   = local.sdwan_ha_subnet_id
   associate_public_ip_address = true
   security_groups             = [aws_security_group.sdwan.id]
   lifecycle {
     ignore_changes = [security_groups]
   }
-  source_dest_check    = false
-  private_ip           = cidrhost(aws_subnet.sdwan_2.cidr_block, 10)
+  source_dest_check = false
+  private_ip        = cidrhost(local.sdwan_ha_subnet_cidr, 10)
 
   tags = {
     Name = length(var.name) > 0 ? "${var.name}-headend2" : "avx-sdwan-edge-headend2",
   }
 }
 
-resource "aws_eip" "headend_1" {
+resource "aws_network_interface" "headend_2_eth1" {
+  count             = var.ha_gw ? (var.second_interface ? 1 : 0) : 0
+  subnet_id         = local.sdwan_ha_subnet_id
+  security_groups   = [aws_security_group.sdwan.id]
+  source_dest_check = false
+
+  attachment {
+    instance     = aws_instance.headend_2.id
+    device_index = 1
+  }
+}
+
+resource "aws_eip" "headend_1_eth0" {
   vpc = true
 }
 
-resource "aws_eip" "headend_2" {
+resource "aws_eip" "headend_1_eth1" {
+  count = var.second_interface ? 1 : 0
+  vpc   = true
+}
+
+resource "aws_eip" "headend_2_eth0" {
   count = var.ha_gw ? 1 : 0
   vpc   = true
 }
 
-resource "aws_eip_association" "eip_headend_1" {
-  instance_id   = aws_instance.headend_1.id
-  allocation_id = aws_eip.headend_1.id
+resource "aws_eip" "headend_2_eth1" {
+  count = var.ha_gw ? (var.second_interface ? 1 : 0) : 0
+  vpc   = true
+}
+
+resource "aws_eip_association" "eip_headend_1_eth0" {
+  network_interface_id = aws_instance.headend_1.primary_network_interface_id
+  allocation_id        = aws_eip.headend_1_eth0.id
+}
+
+resource "aws_eip_association" "eip_headend_1_eth1" {
+  count                = var.second_interface ? 1 : 0
+  network_interface_id = aws_network_interface.headend_1_eth1[0].id
+  allocation_id        = aws_eip.headend_1_eth1[0].id
+}
+
+resource "aws_eip_association" "eip_headend_2_eth0" {
+  count                = var.ha_gw ? 1 : 0
+  network_interface_id = aws_instance.headend_2.primary_network_interface_id
+  allocation_id        = aws_eip.headend_2_eth0[0].id
+}
+
+resource "aws_eip_association" "eip_headend_2_eth0" {
+  count = var.ha_gw ? (var.second_interface ? 1 : 0) : 0
+  network_interface_id = aws_network_interface.headend_2_eth1[0].id
+  allocation_id        = aws_eip.headend_2_eth1[0].id
 }
 
 resource "aws_eip_association" "eip_headend_2" {
@@ -140,8 +197,8 @@ resource "aviatrix_transit_external_device_conn" "sdwan" {
   bgp_local_as_num          = var.aviatrix_asn
   bgp_remote_as_num         = var.sdwan_asn
   backup_bgp_remote_as_num  = var.ha_gw ? var.sdwan_asn : null
-  remote_gateway_ip         = aws_eip.headend_1.public_ip
-  backup_remote_gateway_ip  = var.ha_gw ? aws_eip.headend_2[0].public_ip : null
+  remote_gateway_ip         = var.second_interface ? aws_eip.headend_1_eth1[0].public_ip : aws_eip.headend_1.public_ip
+  backup_remote_gateway_ip  = var.ha_gw ? (var.second_interface ? aws_eip.headend_2_eth1[0].public_ip : aws_eip.headend_2.public_ip) : null
   pre_shared_key            = var.ha_gw ? "${random_string.psk.result}-headend1" : random_string.psk.result
   backup_pre_shared_key     = var.ha_gw ? "${random_string.psk.result}-headend2" : null
   local_tunnel_cidr         = var.ha_gw ? "${local.gw1_tunnel1_avx_ip}/${local.tunnel_masklength},${local.gw1_tunnel2_avx_ip}/${local.tunnel_masklength}" : "${local.gw1_tunnel1_avx_ip}/${local.tunnel_masklength}"

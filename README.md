@@ -29,7 +29,7 @@ The following variables are required:
 
 key | value
 :--- | :---
-cidr | 	The IP CIDR to be used to create the SDWAN VPC.
+cidr | 	The IP CIDR to be used to create the SDWAN VPC. (not required when use_existing_vpc is enabled)
 region | AWS region to deploy the SDWAN VPC in
 transit_gw_obj | The transit gateway object (including all attributes) we want to attach this SDWAN edge to.
 
@@ -49,6 +49,13 @@ tunnel_cidr | 172.31.255.0/28 | CIDR for creation of tunnel IP's. At least /28 i
 aviatrix_asn | 65000 | ASN To be used on Aviatrix Transit Gateway for BGP
 sdwan_asn | 65001 | ASN To be used on SDWAN Gateway for BGP
 aviatrix_tunnel_creation | true | When set to false, the IPSEC tunnels will not be provisioned to the Aviatrix transit gateway.
+use_existing_vpc | false | Set to true to use an existing VPC in stead of having this module create one.
+vpc_id | | VPC ID, for using an existing VPC.
+sdwan_gw_subnet_cidr | | Subnet CIDR, for using an existing VPC. Required when use_existing_vpc is enabled. Make sure this is a public subnet.
+sdwan_ha_subnet_cidr | | Subnet CIDR, for using an existing VPC. Required when use_existing_vpc is enabled and ha_gw is true. Make sure this is a public subnet.
+sdwan_gw_subnet_id | | Subnet ID, for using an existing VPC. Required when use_existing_vpc is enabled. Make sure this is a public subnet.
+sdwan_ha_subnet_id | | Subnet ID, for using an existing VPC. Required when use_existing_vpc is enabled and ha_gw is true. Make sure this is a public subnet.
+second_interface | false | Add second interface to the SDWAN headend. Will be created in the same subnet as the first interface. VPN tunnel created will be done against the second interface if enabled.
 
 ### Outputs
 This module will return the following outputs:
