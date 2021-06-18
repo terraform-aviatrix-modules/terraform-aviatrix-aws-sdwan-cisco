@@ -13,21 +13,21 @@ resource "aws_vpc" "sdwan" {
 resource "aws_subnet" "sdwan_1" {
   count             = var.use_existing_vpc ? 0 : 1
   availability_zone = "${var.region}${var.az1}"
-  vpc_id            = aws_vpc.sdwan.id
+  vpc_id            = aws_vpc.sdwan[0].id
   cidr_block        = cidrsubnet(var.cidr, 1, 0)
 }
 
 resource "aws_subnet" "sdwan_2" {
   count             = var.use_existing_vpc ? 0 : 1
   availability_zone = "${var.region}${var.az2}"
-  vpc_id            = aws_vpc.sdwan.id
+  vpc_id            = aws_vpc.sdwan[0].id
   cidr_block        = cidrsubnet(var.cidr, 1, 1)
 }
 
 #IGW
 resource "aws_internet_gateway" "sdwan" {
   count  = var.use_existing_vpc ? 0 : 1
-  vpc_id = aws_vpc.sdwan.id
+  vpc_id = aws_vpc.sdwan[0].id
 }
 
 #Default route
