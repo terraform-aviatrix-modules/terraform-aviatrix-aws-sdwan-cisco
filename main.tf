@@ -174,16 +174,10 @@ resource "aws_eip_association" "eip_headend_2_eth0" {
   allocation_id        = aws_eip.headend_2_eth0[0].id
 }
 
-resource "aws_eip_association" "eip_headend_2_eth0" {
+resource "aws_eip_association" "eip_headend_2_eth1" {
   count = var.ha_gw ? (var.second_interface ? 1 : 0) : 0
   network_interface_id = aws_network_interface.headend_2_eth1[0].id
   allocation_id        = aws_eip.headend_2_eth1[0].id
-}
-
-resource "aws_eip_association" "eip_headend_2" {
-  count         = var.ha_gw ? 1 : 0
-  instance_id   = aws_instance.headend_2[0].id
-  allocation_id = aws_eip.headend_2[0].id
 }
 
 #Aviatrix VPN Tunnels
