@@ -12,7 +12,7 @@ Module version | Terraform version | Controller version | Terraform provider ver
 :--- | :--- | :--- | :---
 v1.0.0 | | |
 
-### Usage Example
+### Usage Example new VPC
 ```
 module "sdwan_edge" {
   source  = "terraform-aviatrix-modules/aws-sdwan-viptela/aviatrix"
@@ -23,6 +23,35 @@ module "sdwan_edge" {
   transit_gw_obj = "transit_1"
 }
 ```
+
+### Usage Example deploy in Aviatrix transit VPC
+```
+module "transit_aws" {
+  source  = "terraform-aviatrix-modules/aws-transit/aviatrix"
+  version = "v4.0.1"
+
+  cidr    = "10.1.0.0/20"
+  region  = var.aws_region
+  account = aviatrix_account.aws.account_name
+}
+
+module "sdwan" {
+  source = "git::https://github.com/terraform-aviatrix-modules/terraform-aviatrix-aws-sdwan-cisco"
+
+  region               = var.aws_region
+  transit_gw_obj       = module.transit_aws.transit_gateway
+  image_type           = "csr"
+  second_interface     = true
+  use_existing_vpc     = true
+  vpc_id               = module.transit_aws.vpc.vpc_id
+  sdwan_gw_subnet_cidr = module.transit_aws.vpc.public_subnets[0].cidr
+  sdwan_gw_subnet_id   = module.transit_aws.vpc.public_subnets[0].subnet_id
+  sdwan_ha_subnet_cidr = module.transit_aws.vpc.public_subnets[2].cidr
+  sdwan_ha_subnet_id   = module.transit_aws.vpc.public_subnets[2].subnet_id
+}
+```
+
+
 
 ### Variables
 The following variables are required:
